@@ -1,0 +1,22 @@
+# Python packages for the Travel Guide Assistant (Python 3.11).
+# Install: .venv\Scripts\python.exe -m pip install -r requirements.txt
+# All come from PyPI: https://pypi.org/project/<package-name>/ ; each keeps its own license (shown on that page).
+# The two model files are downloaded separately: see the top of config.py.
+
+# UI
+streamlit==1.65.0
+# Classic RAG: vector database
+chromadb==1.5.9
+# GraphRAG (Microsoft)
+graphrag==3.3.0
+# Agentic RAG
+langgraph==1.2.14
+# LLM client (OpenAI-compatible API) + PDFs + data
+openai==2.54.0
+pypdf==6.20.0
+reportlab==5.0.1
+pandas==3.0.6
+pyyaml==6.0.3
+huggingface_hub==2.2.0
+# Local LLM server (install from the prebuilt CPU wheel index, no compiler needed):
+#   pip install "llama-cpp-python[server]==0.3.36" --only-binary=llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu

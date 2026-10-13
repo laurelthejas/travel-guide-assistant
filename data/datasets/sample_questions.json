@@ -1,0 +1,11 @@
+[
+  {"question": "How tall is the Burj Khalifa?", "answer": "828 metres", "keywords": ["828"], "city": "Dubai"},
+  {"question": "In which year did the French Revolution begin in Paris?", "answer": "1789", "keywords": ["1789"], "city": "Paris"},
+  {"question": "What is the ancient amphitheatre in Rome called?", "answer": "The Colosseum", "keywords": ["colosseum"], "city": "Rome"},
+  {"question": "For the World's Fair of which year was the Eiffel Tower built?", "answer": "1889", "keywords": ["1889"], "city": "Paris"},
+  {"question": "Who founded the Tower of London?", "answer": "William the Conqueror", "keywords": ["william"], "city": "London"},
+  {"question": "In which year did the Sydney Harbour Bridge open?", "answer": "1932", "keywords": ["1932"], "city": "Sydney"},
+  {"question": "What did the Dutch call their colony on Manhattan?", "answer": "New Amsterdam", "keywords": ["new amsterdam"], "city": "New York"},
+  {"question": "In which year did the Louvre Abu Dhabi open?", "answer": "2017", "keywords": ["2017"], "city": "Paris"},
+  {"question": "What is the open hole at the top of the Pantheon's dome called?", "answer": "The oculus", "keywords": ["oculus"], "city": "Rome"}
+]

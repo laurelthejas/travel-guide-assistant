@@ -1,0 +1,53 @@
+[
+  {"question": "What currency is used in Tokyo?",
+   "expected_answer": "The Japanese yen (JPY).",
+   "keywords": ["yen"], "type": "factual"},
+
+  {"question": "How tall is the Burj Khalifa?",
+   "expected_answer": "828 metres, the tallest building in the world.",
+   "keywords": ["828"], "type": "factual"},
+
+  {"question": "Who designed the Sydney Opera House?",
+   "expected_answer": "The Danish architect Jorn Utzon.",
+   "keywords": ["utzon"], "type": "factual"},
+
+  {"question": "How do you get from Changi Airport to the Singapore city centre?",
+   "expected_answer": "Take the MRT East West Line (change at Tanah Merah), about 30-40 minutes, or a taxi in about 20 minutes.",
+   "keywords": ["mrt", "tanah merah"], "type": "factual"},
+
+  {"question": "What is simit in Istanbul?",
+   "expected_answer": "A ring of bread covered in sesame seeds sold from street carts.",
+   "keywords": ["bread", "sesame"], "type": "factual"},
+
+  {"question": "Which New York airport is the main one for international flights?",
+   "expected_answer": "JFK International Airport.",
+   "keywords": ["jfk"], "type": "factual"},
+
+  {"question": "Which train connects London and Paris, and how long does the journey take?",
+   "expected_answer": "The Eurostar, from St Pancras International to Gare du Nord in about 2 hours 15 minutes.",
+   "keywords": ["eurostar", "2 hours"], "type": "relational"},
+
+  {"question": "Which engineer worked on both the Statue of Liberty and a famous Paris landmark?",
+   "expected_answer": "Gustave Eiffel engineered the Statue of Liberty's framework and built the Eiffel Tower.",
+   "keywords": ["gustave eiffel", "eiffel tower"], "type": "relational"},
+
+  {"question": "Which landmark in Japan was inspired by the Eiffel Tower?",
+   "expected_answer": "The Tokyo Tower, completed in 1958.",
+   "keywords": ["tokyo tower"], "type": "relational"},
+
+  {"question": "Which city did Emperor Constantine make the new Roman capital, and what is it called today?",
+   "expected_answer": "Constantinople, which is today's Istanbul.",
+   "keywords": ["constantinople", "istanbul"], "type": "relational"},
+
+  {"question": "Which museum near Dubai was created in partnership with a museum in Paris?",
+   "expected_answer": "The Louvre Abu Dhabi, created with the Louvre in Paris.",
+   "keywords": ["louvre abu dhabi"], "type": "relational"},
+
+  {"question": "Which cities in the guides were once part of the Roman Empire?",
+   "expected_answer": "Rome, London (Londinium), Paris (Lutetia), Barcelona (Barcino) and Istanbul (Constantinople).",
+   "keywords": ["london", "paris", "barcelona", "istanbul"], "type": "global"},
+
+  {"question": "Which cities are best to visit in spring?",
+   "expected_answer": "Paris (April-June), Rome (April-May), Istanbul (April-May, tulip festival), Tokyo (cherry blossoms, late March-early April), Barcelona (May-June) and New York (April-June).",
+   "keywords": ["paris", "rome", "tokyo", "istanbul"], "type": "global"}
+]

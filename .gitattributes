@@ -1,0 +1,6 @@
+# The generated PDFs contain no NUL bytes, so git would treat them as text
+# and convert line endings (corrupting them). Mark them binary.
+*.pdf binary
+
+# Windows batch files need CRLF line endings (labels and goto can break with LF)
+*.bat text eol=crlf

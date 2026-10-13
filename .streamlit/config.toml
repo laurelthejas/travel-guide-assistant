@@ -1,0 +1,8 @@
+# Streamlit settings for this project. Streamlit reads this file automatically when it is started
+# from the project folder (start_demo.bat, run_app.bat, or "streamlit run app.py").
+
+[server]
+showEmailPrompt = false   # don't stop at the first-run "Email:" question in the console
+
+[browser]
+gatherUsageStats = false  # don't send usage statistics to Streamlit

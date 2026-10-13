@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Downloaded models (~173 MB) - see README "Setup" to re-download
+models/
+*.gguf
+
+# Built indexes - rebuild with 2_build_chroma.py / 3_build_graphrag.py
+chroma_db/
+graphrag/input/
+graphrag/output/
+graphrag/cache/
+graphrag/logs/
+
+# Secrets
+.env
+
+# Logs and runtime data
+*.log
+data/datasets/feedback.csv
+data/datasets/eval_results.csv
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
