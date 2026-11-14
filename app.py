@@ -11,6 +11,7 @@ import streamlit as st
 from pypdf import PdfReader
 
 import config
+import mcp_client
 from rag import agentic_rag, basic_rag, evaluation, graph_rag, llm
 
 st.set_page_config(page_title="Travel Guide Assistant", page_icon="🧭", layout="wide")
@@ -66,7 +67,7 @@ def timed(fn, *args):
 GRAPH_MISSING = "GraphRAG index not built yet. Run `.venv\\Scripts\\python.exe 3_build_graphrag.py` first."
 
 tabs = st.tabs(["📘 Overview", "📄 Documents", "🔎 RAG", "🕸️ GraphRAG", "🤖 Agentic RAG",
-                "⚖️ Compare All", "✅ Evaluation"])
+                "⚖️ Compare All", "✅ Evaluation", "🔌 MCP"])
 
 # ================================================================== OVERVIEW
 with tabs[0]:
@@ -259,3 +260,77 @@ with tabs[6]:
         st.dataframe(counts)
         st.markdown("**Latest feedback**")
         st.dataframe(fb.tail(10).iloc[::-1], hide_index=True)
+
+
+# ================================================================== MCP
+@st.cache_data(show_spinner="Starting the MCP server and asking for its tools...")
+def mcp_tools():
+    name, tools = mcp_client.list_tools()
+    return name, [{"name": t.name, "description": t.description or "", "schema": t.input_schema} for t in tools]
+
+
+def schema_input(tool_name, field, spec):
+    """One input widget for one tool argument, built from the JSON schema the server sent."""
+    key, label, tip = f"mcp_{tool_name}_{field}", field, spec.get("description")
+    if "enum" in spec:
+        return st.selectbox(label, spec["enum"], index=spec["enum"].index(spec.get("default", spec["enum"][0])),
+                            key=key, help=tip)
+    if spec.get("type") == "integer":
+        return int(st.number_input(label, min_value=spec.get("minimum"), max_value=spec.get("maximum"),
+                                   value=spec.get("default", 1), step=1, key=key, help=tip))
+    return st.text_input(label, value=spec.get("default", SAMPLE_QUESTIONS[0]), key=key, help=tip)
+
+
+with tabs[7]:
+    st.subheader("🔌 The three approaches as an MCP server")
+    st.markdown("`mcp_server.py` offers the guides and the three approaches as tools through the **Model Context "
+                "Protocol (MCP)**, an open standard for connecting AI applications to tools and data. This tab is an "
+                "MCP client: it starts the server, asks which tools it has, and calls them over stdin/stdout, the "
+                "same way an IDE or a desktop AI assistant would.")
+    try:
+        server_name, tools = mcp_tools()
+    except Exception as err:
+        st.error(f"Could not start the MCP server: {err}")
+    else:
+        st.caption(f"Connected to `{server_name}` over stdio · {len(tools)} tools · each call starts the server as a "
+                   "new process, which adds a few seconds, or about 25–30 s for GraphRAG and Agentic RAG because "
+                   "they load Microsoft GraphRAG first")
+        st.dataframe(pd.DataFrame([{"tool": t["name"], "what it does": t["description"].split("\n")[0]}
+                                   for t in tools]), hide_index=True)
+
+        by_name = {t["name"]: t for t in tools}
+        tool = by_name[st.selectbox("Tool", list(by_name), key="mcp_tool")]
+        arguments = {field: schema_input(tool["name"], field, spec)
+                     for field, spec in tool["schema"].get("properties", {}).items()}
+        with st.expander("The tool's input schema, as the server describes it"):
+            st.json(tool["schema"])
+
+        if st.button("Call tool", type="primary", key="mcp_call"):
+            with st.spinner(f"Calling {tool['name']} through MCP..."):
+                start = time.time()
+                try:
+                    st.session_state.mcp = (tool["name"], arguments, mcp_client.call_tool(tool["name"], arguments),
+                                            round(time.time() - start, 1))
+                except Exception as err:
+                    st.session_state.pop("mcp", None)
+                    st.error(f"The MCP call failed: {err}")
+        if "mcp" in st.session_state:
+            name, args, result, secs = st.session_state.mcp
+            text = "\n".join(getattr(block, "text", "") for block in result.content)
+            data = result.structured_content
+            if result.is_error:
+                st.error(text)
+            elif isinstance(data, dict) and "answer" in data:
+                st.success(data["answer"])
+            st.caption(f"⏱️ {secs} s, including starting the server")
+            if not result.is_error:
+                st.markdown("**The tool's result**")
+                st.json(data if data is not None else text)
+            with st.expander("The JSON-RPC request the app sent"):
+                st.json({"jsonrpc": "2.0", "method": "tools/call", "params": {"name": name, "arguments": args}})
+
+        with st.expander("🔗 Use this server from another MCP client"):
+            st.markdown("Most MCP clients accept a server entry like this. They start the server themselves, so "
+                        "only the model server needs to be running.")
+            st.code(json.dumps({"mcpServers": {"travel-guide-assistant": {
+                "command": mcp_client.SERVER.command, "args": mcp_client.SERVER.args}}}, indent=2), language="json")

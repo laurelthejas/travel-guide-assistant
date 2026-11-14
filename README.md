@@ -9,6 +9,8 @@ ways, so you can compare them side by side. Everything runs **locally on a norma
 | 🕸️ **GraphRAG** | Builds a knowledge graph (entities, relationships, communities) and answers from the graph | Microsoft GraphRAG |
 | 🤖 **Agentic RAG** | An agent picks a search tool, grades the results, and retries with the other tool if they are not good enough | LangGraph |
 
+The same three approaches are also available to other AI applications through an [MCP server](#mcp-server).
+
 > 🪟 Built and tested on Windows 11, so the `.bat` launchers and setup commands below are for Windows; on macOS or Linux the Python code should work as is, started with `python llm_server.py` and then `streamlit run app.py`.
 
 ## Quick start
@@ -36,6 +38,7 @@ Double-clicking again while the app is running just opens it in the browser agai
 | 🤖 **Agentic RAG** | The answer and a step-by-step trace of the agent's decisions, plus 👍/👎 |
 | ⚖️ **Compare All** | One question, all three approaches side by side |
 | ✅ **Evaluation** | Runs 13 "golden" questions through all three approaches, scores them, and summarises user feedback |
+| 🔌 **MCP** | Connects to the app's MCP server, lists its tools, builds a form from each tool's input schema, and shows the result and the JSON-RPC request |
 
 💡 Every question box has a **Sample questions** dropdown: pick one of 9 questions, or type your own as before. Each
 sample was tested several times and answered correctly by all three approaches (GraphRAG with local search); they are
@@ -67,6 +70,40 @@ With the tiny model, the ✅ Evaluation tab gave (13 questions, October 2026):
 GraphRAG was the only approach that scored on the "global" questions, the ones that need information from several
 guides, but it is about 10 times slower. Most wrong answers come from the small model, not from the retrieval.
 
+## MCP server
+
+`mcp_server.py` makes the travel guides available to any [Model Context Protocol](https://modelcontextprotocol.io)
+(MCP) client, such as an IDE or a desktop AI assistant. MCP is an open standard for connecting AI applications to
+tools and data. The server offers five read-only tools:
+
+| Tool | What it returns | Time in the 🔌 MCP tab |
+|---|---|---|
+| `list_guides` | The 10 cities and their PDF files | ~1 s |
+| `search_guides` | The passages most similar to a query (the RAG retriever, without an LLM answer) | ~3 s |
+| `ask_rag` | An answer from classic RAG, with the source pages | ~5 s |
+| `ask_graphrag` | An answer from GraphRAG, with `local` or `global` search | ~50 s |
+| `ask_agentic_rag` | An answer from the agent, with its step-by-step trace | ~35 s |
+
+The times include starting the server, which takes about 25–30 s for the two tools that load Microsoft GraphRAG.
+
+The client starts the server itself and talks to it over stdin/stdout (the stdio transport), so there is no need to
+run it by hand: only the model server has to be running. To connect another MCP client, add a server entry like this,
+with the path to your project folder:
+
+```json
+{
+  "mcpServers": {
+    "travel-guide-assistant": {
+      "command": "C:\\path\\to\\travel-guide-assistant\\.venv\\Scripts\\python.exe",
+      "args": ["C:\\path\\to\\travel-guide-assistant\\mcp_server.py"]
+    }
+  }
+}
+```
+
+The file and key names differ between clients, so check your client's documentation. The 🔌 MCP tab shows this entry
+with the paths of your own computer.
+
 ## Where to find each part in the code
 
 | Part | File |
@@ -77,7 +114,8 @@ guides, but it is about 10 times slower. Most wrong answers come from the small 
 | Agent (route → retrieve → grade → switch_tool → generate) | `rag/agentic_rag.py` |
 | Calls to the chat and embedding models | `rag/llm.py` |
 | Golden-dataset scoring + 👍/👎 feedback | `rag/evaluation.py`, `data/datasets/golden_dataset.json`, `data/datasets/feedback.csv` |
-| The app (7 tabs) | `app.py` |
+| The app (8 tabs) | `app.py` |
+| MCP server (5 tools) + the client used by the 🔌 MCP tab | `mcp_server.py`, `mcp_client.py` |
 | All settings | `config.py` |
 | Local model server (+ JSON adapter for GraphRAG) | `llm_server.py`, `llm_server_config.json` |
 
@@ -89,6 +127,7 @@ travel-guide-assistant/
 ├── start_llm_server.bat      <- start only the model server
 ├── run_app.bat               <- start only the app (model server must already run)
 ├── app.py, config.py, llm_server.py
+├── mcp_server.py, mcp_client.py  <- MCP server + the app's MCP client
 ├── 1_generate_pdfs.py        <- step 1 of "Build the data"
 ├── 2_build_chroma.py         <- step 2
 ├── 3_build_graphrag.py       <- step 3
@@ -145,6 +184,7 @@ Answers get much better with a bigger model, for example **Llama 3.2 3B via [Oll
 | The app says **"The LLM server is not running"** | Start it with `start_demo.bat` (or `start_llm_server.bat`), then refresh the page. |
 | **"The model server did not answer within 2 minutes"** | Look at the "model server" window for the error. Often port 8000 is still used by an old server window: close it and try again. |
 | A tab says the **index is not built** | Run the matching step in [Build the data](#build-the-data-one-time). |
+| The 🔌 MCP tab says **"Could not start the MCP server"** | Install the packages again with `.venv\Scripts\python.exe -m pip install -r requirements.txt`: the `mcp` package was added later. |
 | **"DLL load failed … An Application Control policy has blocked this file"** | Windows **Smart App Control** can block some compiled Python packages. It blocked LanceDB on the development PC, which is why GraphRAG uses the small `rag/numpy_vector_store.py` instead. Don't switch GraphRAG back to LanceDB. |
 | Answers are **wrong or strange** | Expected with a 135M model. Check the retrieved chunks/graph data: if the right text was found, the retrieval worked and the model is the weak link. |
 | The **first answer is slow** | The first requests can be slower while the models load. GraphRAG is always the slowest (~20–30 s per answer). |
@@ -170,6 +210,12 @@ packages are downloaded during setup and keep their own licenses.
 - **GraphRAG's vector store:** GraphRAG normally stores its embeddings in LanceDB, which Smart App Control blocked on
   the development PC. `rag/numpy_vector_store.py` (about 100 lines) keeps the few hundred vectors in parquet files and searches
   them with cosine similarity. It is registered as vector store type `numpy` in `graphrag/settings.yaml`.
+- **One MCP server process per call:** the 🔌 MCP tab starts `mcp_server.py` for every call and closes it afterwards.
+  That keeps each call independent and the client code short, at the cost of the start-up time. A client that keeps
+  the server running pays that cost only once.
+- **Stdout in the MCP server:** with the stdio transport, stdout carries the protocol messages. The MCP library sends
+  stray library output to stderr while it serves, and `mcp_server.py` does the same at exit, where LiteLLM (used by
+  GraphRAG) prints a log line.
 
 ## 🔗 Related project
 
