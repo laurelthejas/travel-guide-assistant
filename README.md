@@ -152,8 +152,9 @@ Answers get much better with a bigger model, for example **Llama 3.2 3B via [Oll
 
 ## License
 
-MIT: see [LICENSE](LICENSE). The GraphRAG prompt and settings files come from Microsoft GraphRAG (also MIT); the models
-and Python packages are downloaded during setup and keep their own licenses.
+MIT: see [LICENSE](LICENSE). The GraphRAG prompt and settings files come from Microsoft GraphRAG (also MIT); its
+notice and the list of included files are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The models and Python
+packages are downloaded during setup and keep their own licenses.
 
 ## Design notes
 
