@@ -54,12 +54,12 @@ listed in `data/datasets/sample_questions.json`.
 Both run in [llama.cpp](https://github.com/ggml-org/llama.cpp) (via `llama-cpp-python`), which offers an
 OpenAI-compatible API on `http://127.0.0.1:8000/v1`.
 
-> A 135M-parameter model is tiny, so expect simple and sometimes wrong answers. That is a deliberate part of the
-> comparison: it shows how much the model size matters. To use a bigger model, see [Using a bigger model](#using-a-bigger-model).
+> The answer model is deliberately compact (135M parameters), so the whole system runs offline on a laptop CPU;
+> expect short and sometimes wrong answers. The comparison therefore shows how much each retrieval approach adds. To use a bigger model, see [Using a bigger model](#using-a-bigger-model).
 
 ## Expected results
 
-With the tiny model, the ✅ Evaluation tab gave (13 questions, October 2026):
+With the 135M-parameter model, the ✅ Evaluation tab gave (13 questions, October 2026):
 
 | Approach | Average score | 👍 answers | Average time |
 |---|---|---|---|
@@ -68,7 +68,7 @@ With the tiny model, the ✅ Evaluation tab gave (13 questions, October 2026):
 | 🤖 Agentic RAG | 0.50 | 8 of 13 | ~3.5 s |
 
 GraphRAG was the only approach that scored on the "global" questions, the ones that need information from several
-guides, but it is about 10 times slower. Most wrong answers come from the small model, not from the retrieval.
+guides, but it is about 10 times slower. Most wrong answers come from the size of the answer model, not from the retrieval.
 
 ## MCP server
 
@@ -198,14 +198,14 @@ packages are downloaded during setup and keep their own licenses.
 
 ## Design notes
 
-- **GraphRAG "fast" vs "standard":** with the tiny model we use `--method fast`. Entities and relationships are found
+- **GraphRAG "fast" vs "standard":** with the 135M-parameter model we use `--method fast`. Entities and relationships are found
   with NLP (noun phrases that appear together), and the LLM only writes the community reports. With a bigger LLM, set
   `METHOD = "standard"` in `3_build_graphrag.py` so the LLM extracts the graph itself. A side effect of "fast": names
   can be split, for example "Statue of Liberty" becomes the entities STATUE and LIBERTY.
 - **Agent decisions:** a big LLM would normally make the agent's *route* and *grade* decisions. Here they use simple
   rules and embedding similarity, because a 135M model can't decide reliably. The LangGraph loop is the same either way.
-- **`llm_server.py`** contains a tiny adapter. GraphRAG requests JSON in the newer `json_schema` format, so the adapter
-  converts that into llama.cpp's grammar-constrained `json_object`. As a result, even the tiny model always returns
+- **`llm_server.py`** contains a short adapter. GraphRAG requests JSON in the newer `json_schema` format, so the adapter
+  converts that into llama.cpp's grammar-constrained `json_object`. As a result, even the 135M-parameter model always returns
   valid JSON.
 - **GraphRAG's vector store:** GraphRAG normally stores its embeddings in LanceDB, which Smart App Control blocked on
   the development PC. `rag/numpy_vector_store.py` (about 100 lines) keeps the few hundred vectors in parquet files and searches
@@ -217,8 +217,8 @@ packages are downloaded during setup and keep their own licenses.
   stray library output to stderr while it serves, and `mcp_server.py` does the same at exit, where LiteLLM (used by
   GraphRAG) prints a log line.
 
-## 🔗 Related project
+## 🔗 Related projects
 
-[🧠 C-Caption Transformer](https://github.com/laurelthejas/c-caption-transformer): a small transformer that learns
-from scratch to write and explain simple C programs. From an English caption it writes a plan, the C program and an
-explanation.
+- [📖🖋️ C-Caption Transformer](https://github.com/laurelthejas/c-caption-transformer): a decoder-only transformer built and trained from scratch that writes short C programs from English captions, with a plan and an explanation.
+- [🎨 Diffusion Models: Image Generation and Captioning](https://github.com/laurelthejas/diffusion-models-image-generation-and-captioning): fine-tunes Stable Diffusion for text-to-image and image-to-image, and trains a text-to-image diffusion model from scratch on Fashion-MNIST.
+- [🧩 Autoencoders: Feature Extraction, Colorization and Enhancement](https://github.com/laurelthejas/autoencoders-recognize-colorize-enhance): three image autoencoders trained from scratch on CIFAR-10, which recognize objects and find similar images, add color to grayscale images, and remove noise and blur.
